@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'allauth',
+    'allauth.account',
     "corsheaders",
     "rest_framework",
     "dj_rest_auth",
@@ -51,6 +53,7 @@ INSTALLED_APPS = [
     "project",
     "matrix",
     "record",
+    "authuser",
 ]
 
 
@@ -64,6 +67,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -149,3 +153,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'user.User'
+
+AUTHENTICATION_CLASSES = [
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
