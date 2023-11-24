@@ -19,11 +19,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.views.static import serve
 
-api_version = 'api/v1/'
+apiVersion = 'api/v1/'
 
 urlpatterns = [
-    path(api_version + 'admin/', admin.site.urls),
-    path(api_version + 'auth/', include ('authuser.urls')),
-    path(api_version + 'user/', include ('user.urls')),
-    path(api_version + 'media/<path:path>/', serve, {'document_root': settings.MEDIA_ROOT}),
+    path(apiVersion + 'admin/', admin.site.urls),
+    path(apiVersion + 'auth/', include ('authuser.urls')),
+    path(apiVersion + 'users/', include ('user.urls')),
+    path(apiVersion + 'projects/', include ('projects.urls')),
+    path(apiVersion + 'matrices/', include ('matrix.urls')),
+    path(apiVersion + 'media/<path:path>/', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
