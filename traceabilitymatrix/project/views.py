@@ -13,12 +13,6 @@ class ProjectListView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         try:
             response = super().create(request, *args, **kwargs)
-            projectId = response.data["id"]
-
-            matrixSerializer = MatrixSerializer(data={"associated_project": projectId})
-            matrixSerializer.is_valid(raise_exception=True)
-            matrixSerializer.save()
-
             return Response(
                 data={
                     "message": "Project created successfully",
@@ -66,16 +60,25 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
         except Exception as e:
             return Response(
                 data={"message": f"Error retrieving project: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_404_NOT_FOUND,
             )
 
     def update(self, request, *args, **kwargs):
         try:
-            response = super().update(request, *args, **kwargs)
+            try:
+                instance = self.get_object()
+            except Exception as e:
+                return Response(
+                    data={'message': f'Error finding project: {str(e)}'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
             return Response(
                 data={
                     "message": "Project updated successfully",
-                    "projectData": response.data,
+                    "projectData": serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -87,7 +90,14 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         try:
-            super().destroy(request, *args, **kwargs)
+            try:
+                instance = self.get_object()
+            except Exception as e:
+                return Response(
+                    data={'message': f'Error finding project: {str(e)}'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            self.perform_destroy(instance)
             return Response(
                 data={"message": "Project deleted successfully"},
                 status=status.HTTP_204_NO_CONTENT,
@@ -103,11 +113,23 @@ class ProjectUsersView(generics.RetrieveAPIView):
     serializer_class = ProjectSerializer
 
     def retrieve(self, request, *args, **kwargs):
-        project = self.get_object()
-        users = project.assignedUsers.all()
-        user_data = [{'id': user.id, 'fullName': user.full_name} for user in users]
+        try:
+            try:
+                project = self.get_object()
+            except Exception as e:
+                return Response(
+                    data={'message': f'Error finding project: {str(e)}'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            users = project.assignedUsers.all()
+            user_data = [{'id': user.id, 'fullName': user.full_name} for user in users]
 
-        return Response(
-            data={'message': 'Users retrieved successfully', 'projectUsers': user_data},
-            status=status.HTTP_200_OK
-        )
+            return Response(
+                data={'message': 'Users retrieved successfully', 'projectUsers': user_data},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                data={"message": f"Error deleting project: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
