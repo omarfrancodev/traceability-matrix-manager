@@ -51,12 +51,18 @@ class RecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         except Exception as e:
             return Response(
                 data={'message': f'Error retrieving record: {str(e)}'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_404_NOT_FOUND
             )
 
     def update(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
+            try:
+                instance = self.get_object()
+            except Exception as e:
+                return Response(
+                    data={'message': f'Error finding record: {str(e)}'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
@@ -72,7 +78,13 @@ class RecordDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         try:
-            instance = self.get_object()
+            try:
+                instance = self.get_object()
+            except Exception as e:
+                return Response(
+                    data={'message': f'Error finding record: {str(e)}'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
             self.perform_destroy(instance)
             return Response(
                 data={'message': 'Record deleted successfully'},
@@ -81,5 +93,5 @@ class RecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         except Exception as e:
             return Response(
                 data={'message': f'Error deleting record: {str(e)}'},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_404_NOT_FOUND
             )
