@@ -1,8 +1,6 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Project
-from .serializers import ProjectSerializer
 from matrix.models import Matrix
 from matrix.serializers import MatrixSerializer
 
@@ -45,16 +43,25 @@ class MatrixDetailView(generics.RetrieveUpdateAPIView):
         except Exception as e:
             return Response(
                 data={"message": f"Error retrieving matrix: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_404_NOT_FOUND,
             )
 
     def update(self, request, *args, **kwargs):
         try:
-            response = super().update(request, *args, **kwargs)
+            try:
+                instance = self.get_object()
+            except Exception as e:
+                return Response(
+                    data={'message': f'Error finding record: {str(e)}'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
             return Response(
                 data={
                     "message": "Matrix updated successfully",
-                    "matrixData": response.data,
+                    "matrixData": serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )
