@@ -27,5 +27,6 @@ urlpatterns = [
     path(apiVersion + 'users/', include ('user.urls')),
     path(apiVersion + 'projects/', include ('projects.urls')),
     path(apiVersion + 'matrices/', include ('matrix.urls')),
+    path(apiVersion + 'records/', include ('record.urls')),
     path(apiVersion + 'media/<path:path>/', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
