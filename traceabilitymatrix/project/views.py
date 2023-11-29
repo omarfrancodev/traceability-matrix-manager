@@ -2,11 +2,9 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Project
-from .serializers import ProjectSerializer
-from matrix.serializers import MatrixSerializer
+from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsersProjectSerializer
 
-
-class ProjectListView(generics.ListCreateAPIView):
+class ProjectListCreateView(generics.ListCreateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
@@ -41,11 +39,10 @@ class ProjectListView(generics.ListCreateAPIView):
                 data={"message": f"Error retrieving projects: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-
+            
 class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+    serializer_class = DetailProjectSerializer
 
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -110,26 +107,20 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class ProjectUsersView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+    serializer_class = DetailUsersProjectSerializer
 
     def retrieve(self, request, *args, **kwargs):
         try:
-            try:
-                project = self.get_object()
-            except Exception as e:
-                return Response(
-                    data={'message': f'Error finding project: {str(e)}'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-            users = project.assignedUsers.all()
-            user_data = [{'id': user.id, 'fullName': user.full_name} for user in users]
-
+            response = super().retrieve(request, *args, **kwargs)
             return Response(
-                data={'message': 'Users retrieved successfully', 'projectUsers': user_data},
-                status=status.HTTP_200_OK
+                data={
+                    "message": "Project users retrieved successfully",
+                    "projectData": response.data,
+                },
+                status=status.HTTP_200_OK,
             )
         except Exception as e:
             return Response(
-                data={"message": f"Error deleting project: {str(e)}"},
-                status=status.HTTP_400_BAD_REQUEST,
+                data={"message": f"Error retrieving project users: {str(e)}"},
+                status=status.HTTP_404_NOT_FOUND,
             )
