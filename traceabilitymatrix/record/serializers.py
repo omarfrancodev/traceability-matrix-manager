@@ -9,20 +9,17 @@ class RecordSerializer(serializers.ModelSerializer):
         
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['associatedMatrix'] = instance.associatedMatrix.id
+        representation['associatedProject'] = instance.associatedProject.id
         return representation
 
     def create(self, validated_data):
-        associated_matrix = validated_data['associatedMatrix']
-        project_name = associated_matrix.associatedProject.name
+        associated_project = validated_data['associatedProject']
+        project_name = associated_project.name
 
-        # Obtener la abreviatura del proyecto (primeras letras de cada palabra)
         project_name_abbr = ''.join([word[0].upper() for word in project_name.split()])
         
-        associated_project = associated_matrix.associatedProject
-
         existing_records_count = Record.objects.filter(
-            associatedMatrix__associatedProject=associated_project,
+            associatedProject=associated_project,
             sprint=validated_data['sprint']
         ).count()
 
