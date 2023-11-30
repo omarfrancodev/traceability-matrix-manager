@@ -3,10 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Project
 from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsersProjectSerializer
+from .pagination import CustomPageNumberPagination
 
 class ProjectListCreateView(generics.ListCreateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    pagination_class = CustomPageNumberPagination
 
     def create(self, request, *args, **kwargs):
         try:
