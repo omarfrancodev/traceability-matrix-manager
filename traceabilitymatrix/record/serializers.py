@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Record
-from django.utils.text import slugify
 
 class RecordSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,17 +7,17 @@ class RecordSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        associated_project = validated_data['associatedProject']
-        project_name = associated_project.name
+        associatedProject = validated_data['associatedProject']
+        projectName = associatedProject.name
 
-        project_name_abbr = ''.join([word[0].upper() for word in project_name.split()])
+        projectNameAbbr = ''.join([word[0].upper() for word in projectName.split()])
         
-        existing_records_count = Record.objects.filter(
-            associatedProject=associated_project,
+        existingRecordsCount = Record.objects.filter(
+            associatedProject=associatedProject,
             sprint=validated_data['sprint']
         ).count()
 
-        custom_project_id = f"{project_name_abbr}-S-{validated_data['sprint']}-{existing_records_count + 1:03d}"
+        customProjectRecordId = f"{projectNameAbbr}-S-{validated_data['sprint']}-{existingRecordsCount + 1:03d}"
 
-        validated_data['customProjectId'] = custom_project_id
+        validated_data['projectRecordId'] = customProjectRecordId
         return super().create(validated_data)
