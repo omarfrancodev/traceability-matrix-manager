@@ -6,11 +6,6 @@ class RecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Record
         fields = '__all__'
-        
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['associatedProject'] = instance.associatedProject.id
-        return representation
 
     def create(self, validated_data):
         associated_project = validated_data['associatedProject']
