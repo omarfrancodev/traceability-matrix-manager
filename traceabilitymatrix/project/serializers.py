@@ -13,7 +13,7 @@ class DetailProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'associatedRecords']
+        fields = ['id', 'name', 'description', 'associatedRecords']
 
 class DetailUsersProjectSerializer(serializers.ModelSerializer):
     assignedUsers = ProjectUserDetailsSerializer(many=True, read_only=True)
