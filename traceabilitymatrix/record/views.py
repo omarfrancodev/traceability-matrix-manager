@@ -2,10 +2,12 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import Record
 from .serializers import RecordSerializer
+from .pagination import CustomPageNumberPagination
 
 class RecordListView(generics.ListCreateAPIView):
     queryset = Record.objects.all()
     serializer_class = RecordSerializer
+    pagination_class = CustomPageNumberPagination
 
     def list(self, request, *args, **kwargs):
         try:
