@@ -24,11 +24,11 @@ apiVersion = 'api/v1/'
 
 urlpatterns = [
     path(apiVersion + 'admin/', admin.site.urls),
-    path(apiVersion + 'auth/', include ('authuser.urls')),
-    path(apiVersion + 'users/', include ('user.urls')),
+    # path(apiVersion + 'auth/', include ('authuser.urls')),
+    # path(apiVersion + 'users/', include ('user.urls')),
     path(apiVersion + 'projects/', include ('project.urls')),
     path(apiVersion + 'records/', include ('record.urls')),
-    path(apiVersion + 'media/<path:path>/', serve, {'document_root': settings.MEDIA_ROOT}),
+    path('media/<path:path>/', serve, {'document_root': settings.MEDIA_ROOT}),
 ]
 
 if settings.DEBUG:

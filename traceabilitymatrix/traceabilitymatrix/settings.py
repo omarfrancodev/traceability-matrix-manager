@@ -43,12 +43,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'allauth',
-    'allauth.account',
     "corsheaders",
     "rest_framework",
-    "dj_rest_auth",
     "rest_framework.authtoken",
+    "djoser",
     "user",
     "project",
     "record",
@@ -66,7 +64,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
+    "django_currentuser.middleware.ThreadLocalUserMiddleware",
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -148,13 +146,7 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-AUTH_USER_MODEL = 'user.User'
-
-AUTHENTICATION_CLASSES = [
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
-
-ACCOUNT_EMAIL_VERIFICATION = "none"
+AUTH_USER_MODEL = "user.User"
