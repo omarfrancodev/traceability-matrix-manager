@@ -5,7 +5,7 @@ from .serializers import RecordSerializer
 from .pagination import CustomPageNumberPagination
 
 class RecordListView(generics.ListCreateAPIView):
-    queryset = Record.objects.all()
+    queryset = Record.objects.all().order_by('id')
     serializer_class = RecordSerializer
     pagination_class = CustomPageNumberPagination
 
