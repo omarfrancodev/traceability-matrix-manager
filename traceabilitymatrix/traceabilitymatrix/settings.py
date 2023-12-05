@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     "user",
     "project",
     "record",
-    "authuser",
 ]
 
 
