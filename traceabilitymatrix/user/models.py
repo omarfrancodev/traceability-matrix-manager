@@ -41,7 +41,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=50, choices=Role.choices)
     fullName = models.CharField(max_length=255)
     email = models.EmailField(unique=True, verbose_name="Email Address")
-    assignedProjects = models.ManyToManyField(
+    projects = models.ManyToManyField(
         "project.Project", related_name="assignedUsers", blank=True
     )
     username = None
