@@ -11,12 +11,12 @@ def generate_project_record_id(sender, instance, **kwargs):
     projectName = associatedProject.name
     projectNameAbbr = "".join([word[0].upper() for word in projectName.split()])
 
-    existing_records_count = Record.objects.filter(
+    existingRecordsCount = Record.objects.filter(
         associatedProject=associatedProject, sprint=instance.sprint
     ).count()
-
+    
     customProjectRecordId = (
-        f"{projectNameAbbr}-S-{instance.sprint}-{existing_records_count + 1:03d}"
+        f"{projectNameAbbr}-S-{instance.sprint}-{existingRecordsCount + 1:03d}"
     )
 
     instance.projectRecordId = customProjectRecordId
