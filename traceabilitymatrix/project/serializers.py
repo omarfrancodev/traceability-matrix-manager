@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Project
 from record.serializers import RecordSerializer
-from user.serializers import ProjectUserDetailsSerializer
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,7 +15,7 @@ class DetailProjectSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'associatedRecords']
 
 class DetailUsersProjectSerializer(serializers.ModelSerializer):
-    assignedUsers = ProjectUserDetailsSerializer(many=True, read_only=True)
+    assignedUsers = serializers.SlugRelatedField(many=True, read_only=True, slug_field="fullName")
 
     class Meta:
         model = Project
