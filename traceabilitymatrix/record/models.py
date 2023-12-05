@@ -34,8 +34,8 @@ class Record(models.Model):
     status = models.CharField(max_length=25, choices=Status.choices)
     createdBy = CurrentUserField(related_name="createdRecordBy")
     modifiedBy = CurrentUserField(on_update=True, related_name="modifiedRecordsBy")
-    creationDate = models.DateField(auto_now_add=True)
-    updateDate = models.DateField(auto_now=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
     impact = models.CharField(max_length=25, choices=Impact.choices)
     notes = models.TextField(blank=True)
 
