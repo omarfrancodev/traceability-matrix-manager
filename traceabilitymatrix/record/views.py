@@ -2,15 +2,17 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import Record
 from .serializers import RecordSerializer
-from .pagination import CustomPageNumberPagination
+from rest_framework.permissions import DjangoModelPermissions
+from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
 
 class RecordListView(generics.ListCreateAPIView):
     queryset = Record.objects.all().order_by('id')
     serializer_class = RecordSerializer
-    pagination_class = CustomPageNumberPagination
+    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
 
     def list(self, request, *args, **kwargs):
         try:
+            self.check_permissions(request)
             response = super().list(request, *args, **kwargs)
             return Response(
                 data={'message': 'Records retrieved successfully', 'recordData': response.data},
@@ -24,6 +26,7 @@ class RecordListView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
         try:
+            self.check_permissions(request)
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
@@ -42,6 +45,7 @@ class RecordListView(generics.ListCreateAPIView):
 class RecordDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Record.objects.all()
     serializer_class = RecordSerializer
+    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
 
     def retrieve(self, request, *args, **kwargs):
         try:
