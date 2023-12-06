@@ -1,14 +1,16 @@
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
 from .models import Project
-from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsersProjectSerializer
-from .pagination import CustomPageNumberPagination
+from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsersProjectSerializer, DetailProjectRecordSerializer
+from rest_framework.permissions import DjangoModelPermissions
+from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
 
 class ProjectListCreateView(generics.ListCreateAPIView):
-    queryset = Project.objects.all()
+    queryset = Project.objects.all().order_by('id')
     serializer_class = ProjectSerializer
-    pagination_class = CustomPageNumberPagination
+    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
 
     def create(self, request, *args, **kwargs):
         try:
@@ -45,6 +47,7 @@ class ProjectListCreateView(generics.ListCreateAPIView):
 class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     serializer_class = DetailProjectSerializer
+    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
 
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -55,6 +58,11 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
                     "projectData": response.data,
                 },
                 status=status.HTTP_200_OK,
+            )
+        except PermissionDenied:
+            return Response(
+                data={"message": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN,
             )
         except Exception as e:
             return Response(
@@ -124,5 +132,25 @@ class ProjectUsersView(generics.RetrieveAPIView):
         except Exception as e:
             return Response(
                 data={"message": f"Error retrieving project users: {str(e)}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+class ProjectRecordsView(generics.RetrieveAPIView):
+    queryset = Project.objects.all()
+    serializer_class = DetailProjectRecordSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            response = super().retrieve(request, *args, **kwargs)
+            return Response(
+                data={
+                    "message": "Project records retrieved successfully",
+                    "projectData": response.data,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                data={"message": f"Error retrieving project records: {str(e)}"},
                 status=status.HTTP_404_NOT_FOUND,
             )
