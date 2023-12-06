@@ -1,13 +1,14 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import User
-from .serializers import CustomUserSerializer
-from rest_framework.permissions import IsAuthenticated
+from .serializers import CustomUserSerializer, CustomListUserSerializer
+from rest_framework.permissions import DjangoModelPermissions
+from traceabilitymatrix.permissions import AdminPermission
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all().order_by('id')
-    serializer_class = CustomUserSerializer
-    permission_classes = [IsAuthenticated]
+    serializer_class = CustomListUserSerializer
+    permission_classes = [DjangoModelPermissions, AdminPermission]
 
     def list(self, request, *args, **kwargs):
         try:
@@ -25,7 +26,7 @@ class UserListView(generics.ListAPIView):
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [DjangoModelPermissions, AdminPermission]
 
     def retrieve(self, request, *args, **kwargs):
         try:
