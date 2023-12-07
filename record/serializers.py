@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from .models import Record, ResourceURL, ResourceFile
+from django_currentuser.middleware import get_current_authenticated_user
 
 
 class RecordSerializer(serializers.ModelSerializer):
     files = serializers.SerializerMethodField()
     urls = serializers.SerializerMethodField()
-    createdBy = serializers.SlugRelatedField(read_only=True, slug_field="fullName")
-    modifiedBy = serializers.SlugRelatedField(read_only=True, slug_field="fullName")
 
     uploadedFiles = serializers.ListField(
         child=serializers.FileField(max_length=10000, allow_empty_file=True),
@@ -58,9 +57,14 @@ class RecordSerializer(serializers.ModelSerializer):
         return [url.url for url in urls]
 
     def create(self, validated_data):
+        current_user = get_current_authenticated_user()
         uploaded_files = validated_data.pop("uploadedFiles", [])
         uploaded_urls = validated_data.pop("uploadedURLs", [])
-        record = Record.objects.create(**validated_data)
+        record = Record.objects.create(
+            createdBy=current_user.fullName,
+            modifiedBy=current_user.fullName,
+            **validated_data
+        )
 
         for file in uploaded_files:
             if file:
@@ -71,18 +75,24 @@ class RecordSerializer(serializers.ModelSerializer):
                 ResourceURL.objects.create(record=record, url=url)
 
         return record
-    
+
     def update(self, instance, validated_data):
+        current_user = get_current_authenticated_user()
+        modifiedBy = current_user.fullName
+        instance.modifiedBy = modifiedBy
+
         for field in instance._meta.fields:
             field_name = field.name
             if field_name in validated_data:
                 setattr(instance, field_name, validated_data[field_name])
-                
-        uploadedFiles = validated_data.get("uploadedFiles", [])
-        self.update_relation(ResourceFile, instance, "file", uploadedFiles)
 
-        uploadedUrls = validated_data.get("uploadedURLs", [])
-        self.update_relation(ResourceURL, instance, "url", uploadedUrls)
+        uploadedFiles = validated_data.get("uploadedFiles")
+        if uploadedFiles:
+            self.update_relation(ResourceFile, instance, "file", uploadedFiles)
+
+        uploadedUrls = validated_data.get("uploadedURLs")
+        if uploadedUrls:
+            self.update_relation(ResourceURL, instance, "url", uploadedUrls)
 
         instance.save()
         return instance
