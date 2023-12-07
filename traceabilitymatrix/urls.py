@@ -23,7 +23,6 @@ from django.conf.urls.static import static
 apiVersion = 'api/v1/'
 
 urlpatterns = [
-    path(apiVersion + 'admin/', admin.site.urls),
     path(apiVersion + 'auth/', include('djoser.urls')),
     path(apiVersion + 'auth/', include('djoser.urls.jwt')),
     path(apiVersion + 'users/', include('user.urls')),
