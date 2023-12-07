@@ -3,11 +3,13 @@ from django.db.models import Q
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from project.serializers import ProjectSerializer
 from project.models import Project
+from .models import User
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         fields = ["id", "fullName", "email", "role", "password"]
+
 
 class CustomListUserSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
@@ -36,9 +38,13 @@ class CustomUserSerializer(UserSerializer):
 
     def get_otherProjects(self, instance):
         assignedProjectIds = instance.myProjects.values_list("id", flat=True)
-        other_projects = Project.objects.filter(
-            ~Q(id__in=assignedProjectIds), isDraft=True
-        )
+        role = instance.role
+        if role == User.Role.Admin:
+            other_projects = Project.objects.filter(~Q(id__in=assignedProjectIds))
+        else:
+            other_projects = Project.objects.filter(
+                ~Q(id__in=assignedProjectIds), isPublished=True
+            )
         return ProjectSerializer(other_projects, many=True).data
 
     def update(self, instance, validated_data):
