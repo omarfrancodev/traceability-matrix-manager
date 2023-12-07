@@ -1,9 +1,23 @@
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
+from django_currentuser.middleware import get_current_authenticated_user
+from eventrecord.models import EventRecord
 from .models import Record
 import os
 
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+
+@receiver(pre_delete, sender=Record)
+def user_deleted(sender, instance, **kwargs):
+    current_user = get_current_authenticated_user()
+    EventRecord.objects.create(
+        actionType=EventRecord.Action.Delete,
+        userFullNameExec=current_user.fullName,
+        userRoleExec=current_user.role,
+        appModel=Record.__name__,
+    )
 
 @receiver(pre_save, sender=Record)
 def generate_project_record_id(sender, instance, **kwargs):
