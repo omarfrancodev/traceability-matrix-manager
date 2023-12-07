@@ -118,6 +118,7 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ProjectUsersView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = DetailUsersProjectSerializer
+    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
 
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -138,6 +139,7 @@ class ProjectUsersView(generics.RetrieveAPIView):
 class ProjectRecordsView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = DetailProjectRecordSerializer
+    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
 
     def retrieve(self, request, *args, **kwargs):
         try:
