@@ -12,6 +12,8 @@ def create_groups_and_permissions():
 
     permissionsAdmin = Permission.objects.filter(
         codename__in=[
+            "view_eventrecord",
+            "add_eventrecord",
             "view_project",
             "add_project",
             "change_project",
@@ -30,6 +32,8 @@ def create_groups_and_permissions():
 
     permissionsTM = Permission.objects.filter(
         codename__in=[
+            "view_eventrecord",
+            "add_eventrecord",
             "view_project",
             "view_record",
             "add_record",
@@ -40,6 +44,11 @@ def create_groups_and_permissions():
     teamMemberGroup.permissions.set(permissionsTM)
 
     permissionsGuest = Permission.objects.filter(
-        codename__in=["view_project", "view_record"]
+        codename__in=[
+            "view_eventrecord",
+            "add_eventrecord",
+            "view_project",
+            "view_record",
+        ]
     )
     guestGroup.permissions.set(permissionsGuest)
