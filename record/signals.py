@@ -11,6 +11,11 @@ from django.dispatch import receiver
 
 @receiver(pre_delete, sender=Record)
 def record_deleted(sender, instance, **kwargs):
+    resources = instance.files.all()
+    for resource in resources:
+        if resource.file and os.path.isfile(resource.file.path):
+            os.remove(resource.file.path)
+            
     current_user = get_current_authenticated_user()
     EventRecord.objects.create(
         actionType=EventRecord.Action.Delete,
@@ -50,12 +55,3 @@ def validate_key_relationship(sender, instance, **kwargs):
         raise ValidationError(
             'El valor de keyRelationship debe ser igual a uno de los projectRecordId existentes o "NA"'
         )
-
-
-@receiver(post_delete, sender=Record)
-def delete_record_file(sender, instance, **kwargs):
-    resources = instance.files.all()
-
-    for resource in resources:
-        if resource.file and os.path.isfile(resource.file.path):
-            os.remove(resource.file.path)
