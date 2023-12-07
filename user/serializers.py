@@ -40,7 +40,7 @@ class CustomUserSerializer(UserSerializer):
         assignedProjectIds = instance.myProjects.values_list("id", flat=True)
         role = instance.role
         if role == User.Role.Admin:
-            other_projects = Project.objects.filter(~Q(id__in=assignedProjectIds))
+            other_projects = Project.objects.filter(~Q(id__in=assignedProjectIds)).order_by("createdAt")
         else:
             other_projects = Project.objects.filter(
                 ~Q(id__in=assignedProjectIds), isPublished=True
@@ -48,8 +48,8 @@ class CustomUserSerializer(UserSerializer):
         return ProjectSerializer(other_projects, many=True).data
 
     def update(self, instance, validated_data):
-        assignedProjectIds = validated_data.pop("assignedProjects", [])
-        instance = super().update(instance, validated_data)
+        assignedProjectIds = validated_data.pop("assignedProjects", instance.myProjects.values_list("id", flat=True))
         instance.myProjects.set(assignedProjectIds)
+        instance = super().update(instance, validated_data)
 
         return instance
