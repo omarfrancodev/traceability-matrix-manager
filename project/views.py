@@ -61,7 +61,7 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
         except PermissionDenied:
             return Response(
-                data={"message": "You do not have permission to perform this action."},
+                data={"message": "You do not have permission to perform this action. You can not access to this project."},
                 status=status.HTTP_403_FORBIDDEN,
             )
         except Exception as e:
