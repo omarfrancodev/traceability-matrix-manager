@@ -7,14 +7,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Project
-        fields = ['id', 'name', 'description', 'isDraft', 'owner']
+        fields = ['id', 'name', 'description', 'isPublished', 'owner']
         
 class DetailProjectSerializer(serializers.ModelSerializer):
     owner = serializers.SlugRelatedField(read_only=True, slug_field="fullName")
     
     class Meta:
         model = Project
-        fields = ['id', 'name', 'description', 'owner', 'isDraft', 'createdAt', 'updatedAt']
+        fields = ['id', 'name', 'description', 'owner', 'isPublished', 'createdAt', 'updatedAt']
 
 class DetailProjectRecordSerializer(serializers.ModelSerializer):
     associatedRecords = RecordSerializer(many=True, read_only=True)
