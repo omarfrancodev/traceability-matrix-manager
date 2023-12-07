@@ -14,6 +14,7 @@ def user_deleted(sender, instance, **kwargs):
     current_user = get_current_authenticated_user()
     EventRecord.objects.create(
         actionType=EventRecord.Action.Delete,
+        userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
         userFullNameAffected=instance.fullName,
         userRoleAffected=instance.role,
@@ -27,7 +28,7 @@ def restrict_role_change(sender, instance, **kwargs):
         original_instance = User.objects.get(pk=instance.pk)
         current_user = get_current_authenticated_user()
 
-        if original_instance.id != current_user.id:
+        if original_instance.id != current_user.id and original_instance.role != instance.role:
             update_role_create_event_record(current_user, instance)
         elif original_instance.role != instance.role:
             if original_instance.role != User.Role.Admin:
@@ -43,6 +44,7 @@ def update_role_create_event_record(current_user, instance):
     assign_groups(instance, instance.role)
     EventRecord.objects.create(
         actionType=EventRecord.Action.EditRole,
+        userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
         userFullNameAffected=instance.fullName,
         userRoleAffected=instance.role,
