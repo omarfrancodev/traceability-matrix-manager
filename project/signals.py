@@ -5,7 +5,7 @@ from django_currentuser.middleware import get_current_authenticated_user
 from .models import Project
 
 @receiver(pre_delete, sender=Project)
-def user_deleted(sender, instance, **kwargs):
+def project_deleted(sender, instance, **kwargs):
     current_user = get_current_authenticated_user()
     EventRecord.objects.create(
         actionType=EventRecord.Action.Delete,

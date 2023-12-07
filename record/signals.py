@@ -10,7 +10,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
 @receiver(pre_delete, sender=Record)
-def user_deleted(sender, instance, **kwargs):
+def record_deleted(sender, instance, **kwargs):
     current_user = get_current_authenticated_user()
     EventRecord.objects.create(
         actionType=EventRecord.Action.Delete,
