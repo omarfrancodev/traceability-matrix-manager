@@ -29,6 +29,7 @@ urlpatterns = [
     path(apiVersion + 'users/', include('user.urls')),
     path(apiVersion + 'projects/', include ('project.urls')),
     path(apiVersion + 'records/', include ('record.urls')),
+    path(apiVersion + 'event-records/', include ('eventrecord.urls')),
 ]
 
 if settings.DEBUG:
