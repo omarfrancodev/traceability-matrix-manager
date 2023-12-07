@@ -9,7 +9,17 @@ User = get_user_model()
 class EventRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventRecord
-        fields = "__all__"
+        fields = [
+            "id",
+            "actionType",
+            "userFullNameExec",
+            "userRoleExec",
+            "userFullNameAffected",
+            "userRoleAffected",
+            "appModel",
+            "serverTimestamp",
+            "clientLocalTimestamp",
+        ]
 
     def create(self, validated_data):
         current_user = get_current_authenticated_user()
