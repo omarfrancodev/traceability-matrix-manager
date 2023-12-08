@@ -39,19 +39,3 @@ def generate_project_record_id(sender, instance, **kwargs):
     )
 
     instance.projectRecordId = customProjectRecordId
-
-
-@receiver(pre_save, sender=Record)
-def validate_key_relationship(sender, instance, **kwargs):
-    if instance.keyRelationship == "NA":
-        return
-
-    existingRecords = Record.objects.filter(
-        associatedProject=instance.associatedProject
-    ).exclude(pk=instance.pk)
-    matchingCustomProjectIds = existingRecords.values_list("projectRecordId", flat=True)
-
-    if instance.keyRelationship not in matchingCustomProjectIds:
-        raise ValidationError(
-            'El valor de keyRelationship debe ser igual a uno de los projectRecordId existentes o "NA"'
-        )
