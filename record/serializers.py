@@ -2,10 +2,13 @@ from rest_framework import serializers
 from .models import Record, ResourceURL, ResourceFile
 from django_currentuser.middleware import get_current_authenticated_user
 
+class StringListField(serializers.ListField):
+    child = serializers.CharField(min_length=2)
 
 class RecordSerializer(serializers.ModelSerializer):
     files = serializers.SerializerMethodField()
     urls = serializers.SerializerMethodField()
+    keyRelationships = StringListField()
 
     uploadedFiles = serializers.ListField(
         child=serializers.FileField(max_length=10000, allow_empty_file=True),
@@ -31,7 +34,7 @@ class RecordSerializer(serializers.ModelSerializer):
             "type",
             "artifactName",
             "description",
-            "keyRelationship",
+            "keyRelationships",
             "status",
             "createdBy",
             "modifiedBy",
@@ -103,3 +106,20 @@ class RecordSerializer(serializers.ModelSerializer):
         for newData in data:
             if newData:
                 model.objects.create(record=instance, **{field_name: newData})
+
+    def removing_simbols(self, string):
+        charactersToDelete = "[]' "
+        translationTable = str.maketrans("", "", charactersToDelete)
+        chainWithoutSymbols = string.translate(translationTable)
+        return chainWithoutSymbols
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        keyRelations = data["keyRelationships"]
+        stringKeys = ""
+        for key in keyRelations:
+            stringKeys += key
+        clean_relationships = self.removing_simbols(stringKeys)
+        data["keyRelationships"] = clean_relationships.split(",")
+        return data
+

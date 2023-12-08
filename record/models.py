@@ -22,13 +22,13 @@ class Record(models.Model):
     associatedProject = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="associatedRecords"
     )
-    projectRecordId = models.CharField(max_length=255, blank=True)
+    projectRecordId = models.CharField(max_length=255, blank=True, unique=True)
     sprint = models.CharField(max_length=255)
     phase = models.CharField(max_length=25, choices=Phase.choices)
     type = models.CharField(max_length=255)
     artifactName = models.CharField(max_length=255)
-    description = models.CharField(max_length=255, blank=True)
-    keyRelationship = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    keyRelationships = models.TextField()
     status = models.CharField(max_length=25, choices=Status.choices)
     createdBy = models.CharField(max_length=255, blank=True)
     modifiedBy = models.CharField(max_length=255, blank=True)
