@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
 from .models import Project
-from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsersProjectSerializer, DetailProjectRecordSerializer
+from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsersProjectSerializer
 from rest_framework.permissions import DjangoModelPermissions
 from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
 
@@ -133,26 +133,5 @@ class ProjectUsersView(generics.RetrieveAPIView):
         except Exception as e:
             return Response(
                 data={"message": f"Error retrieving project users: {str(e)}"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-class ProjectRecordsView(generics.RetrieveAPIView):
-    queryset = Project.objects.all()
-    serializer_class = DetailProjectRecordSerializer
-    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
-
-    def retrieve(self, request, *args, **kwargs):
-        try:
-            response = super().retrieve(request, *args, **kwargs)
-            return Response(
-                data={
-                    "message": "Project records retrieved successfully",
-                    "projectData": response.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return Response(
-                data={"message": f"Error retrieving project records: {str(e)}"},
                 status=status.HTTP_404_NOT_FOUND,
             )

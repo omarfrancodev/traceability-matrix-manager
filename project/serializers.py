@@ -19,6 +19,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class DetailProjectSerializer(serializers.ModelSerializer):
+    associatedRecords = RecordSerializer(many=True, read_only=True)
     class Meta:
         model = Project
         fields = [
@@ -29,16 +30,8 @@ class DetailProjectSerializer(serializers.ModelSerializer):
             "isPublished",
             "createdAt",
             "updatedAt",
+            "associatedRecords",
         ]
-
-
-class DetailProjectRecordSerializer(serializers.ModelSerializer):
-    associatedRecords = RecordSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Project
-        fields = ["id", "name", "associatedRecords"]
-
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["associatedRecords"] = sorted(
