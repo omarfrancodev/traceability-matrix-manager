@@ -3,14 +3,26 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import status
 from .models import Project
-from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsersProjectSerializer
+from .serializers import (
+    ProjectSerializer,
+    DetailProjectSerializer,
+    DetailUsersProjectSerializer,
+)
 from rest_framework.permissions import DjangoModelPermissions
-from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
+from traceabilitymatrix.permissions import (
+    AdminPermission,
+    TeamMemberPermission,
+    GuestPermission,
+)
 
-class ProjectListCreateView(generics.CreateAPIView):
+
+class ProjectCreateView(generics.CreateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
+    permission_classes = [
+        DjangoModelPermissions,
+        (AdminPermission | TeamMemberPermission | GuestPermission),
+    ]
 
     def create(self, request, *args, **kwargs):
         try:
@@ -27,11 +39,15 @@ class ProjectListCreateView(generics.CreateAPIView):
                 data={"message": f"Error creating project: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-            
+
+
 class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     serializer_class = DetailProjectSerializer
-    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
+    permission_classes = [
+        DjangoModelPermissions,
+        (AdminPermission | TeamMemberPermission | GuestPermission),
+    ]
 
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -45,7 +61,9 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
             )
         except PermissionDenied:
             return Response(
-                data={"message": "You do not have permission to perform this action. You can not access to this project."},
+                data={
+                    "message": "You do not have permission to perform this action. You can not access to this project."
+                },
                 status=status.HTTP_403_FORBIDDEN,
             )
         except Exception as e:
@@ -60,8 +78,8 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
                 instance = self.get_object()
             except Exception as e:
                 return Response(
-                    data={'message': f'Error finding project: {str(e)}'},
-                    status=status.HTTP_404_NOT_FOUND
+                    data={"message": f"Error finding project: {str(e)}"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
@@ -85,8 +103,8 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
                 instance = self.get_object()
             except Exception as e:
                 return Response(
-                    data={'message': f'Error finding project: {str(e)}'},
-                    status=status.HTTP_404_NOT_FOUND
+                    data={"message": f"Error finding project: {str(e)}"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
             self.perform_destroy(instance)
             return Response(
@@ -99,10 +117,14 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+
 class ProjectUsersView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
     serializer_class = DetailUsersProjectSerializer
-    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
+    permission_classes = [
+        DjangoModelPermissions,
+        (AdminPermission | TeamMemberPermission | GuestPermission),
+    ]
 
     def retrieve(self, request, *args, **kwargs):
         try:
