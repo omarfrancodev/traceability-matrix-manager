@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from .models import Record
-from .serializers import RecordSerializer
+from .serializers import RecordSerializer, RecordDetailSerializer
 from rest_framework.permissions import DjangoModelPermissions
 from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
 
@@ -85,5 +85,23 @@ class RecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         except Exception as e:
             return Response(
                 data={'message': f'Error deleting record: {str(e)}'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+class RecordDetailTraceView(generics.RetrieveAPIView):
+    queryset = Record.objects.all()
+    serializer_class = RecordDetailSerializer
+    permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            response = super().retrieve(request, *args, **kwargs)
+            return Response(
+                data={'message': 'Record retrieved successfully', 'recordData': response.data},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                data={'message': f'Error retrieving record: {str(e)}'},
                 status=status.HTTP_404_NOT_FOUND
             )

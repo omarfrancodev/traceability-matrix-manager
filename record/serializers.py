@@ -123,3 +123,91 @@ class RecordSerializer(serializers.ModelSerializer):
         data["keyRelationships"] = clean_relationships.split(",")
         return data
 
+class RecordDetailSerializer(serializers.ModelSerializer):
+    files = serializers.SerializerMethodField()
+    urls = serializers.SerializerMethodField()
+    associatedRecords = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Record
+        fields = [
+            "id",
+            "associatedProject",
+            "projectRecordId",
+            "sprint",
+            "phase",
+            "type",
+            "artifactName",
+            "description",
+            "keyRelationships",
+            "status",
+            "createdBy",
+            "modifiedBy",
+            "createdAt",
+            "updatedAt",
+            "impact",
+            "notes",
+            "files",
+            "urls",
+            "associatedRecords",
+        ]
+
+    def get_files(self, obj):
+        files = ResourceFile.objects.filter(record=obj)
+        return [self.get_file_url(file) for file in files]
+
+    def get_file_url(self, obj):
+        return self.context["request"].build_absolute_uri(obj.file.url)
+
+    def get_urls(self, obj):
+        urls = ResourceURL.objects.filter(record=obj)
+        return [url.url for url in urls]
+
+    def get_associatedRecords(self, obj):
+        all_associated_records = []
+        keyRelations = obj.keyRelationships
+        if isinstance(keyRelations, str):
+            clean_relationships = self.removing_simbols(keyRelations)
+            keyRelations = clean_relationships.split(",")
+        try:
+            for keyRelation in keyRelations:
+                related_record = Record.objects.get(projectRecordId=keyRelation)
+                if related_record:
+                    all_associated_records += self.get_all_associated_records(related_record)
+        except Exception:
+            pass
+        serializer = RecordSerializer(all_associated_records, many=True)
+        return serializer.data
+    
+    def get_all_associated_records(self, record):
+        associated_records = [record]
+        try:
+            if record:
+                keyRelations = record.keyRelationships
+                if isinstance(keyRelations, str):
+                    clean_relationships = self.removing_simbols(record.keyRelationships)
+                    keyRelations = clean_relationships.split(",")
+                if len(keyRelations) >= 1:
+                    for keyRelation in keyRelations:
+                        related_record = Record.objects.get(projectRecordId=keyRelation)
+                        if related_record:
+                            associated_records += self.get_all_associated_records(related_record)
+        except Exception:
+            pass
+        return associated_records
+
+    def removing_simbols(self, string):
+        charactersToDelete = "[]' "
+        translationTable = str.maketrans("", "", charactersToDelete)
+        chainWithoutSymbols = string.translate(translationTable)
+        return chainWithoutSymbols
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        keyRelations = data["keyRelationships"]
+        stringKeys = ""
+        for key in keyRelations:
+            stringKeys += key
+        clean_relationships = self.removing_simbols(stringKeys)
+        data["keyRelationships"] = clean_relationships.split(",")
+        return data
