@@ -7,8 +7,8 @@ from .serializers import ProjectSerializer, DetailProjectSerializer, DetailUsers
 from rest_framework.permissions import DjangoModelPermissions
 from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
 
-class ProjectListCreateView(generics.ListCreateAPIView):
-    queryset = Project.objects.all().order_by('id')
+class ProjectListCreateView(generics.CreateAPIView):
+    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
 
@@ -26,22 +26,6 @@ class ProjectListCreateView(generics.ListCreateAPIView):
             return Response(
                 data={"message": f"Error creating project: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST,
-            )
-
-    def list(self, request, *args, **kwargs):
-        try:
-            response = super().list(request, *args, **kwargs)
-            return Response(
-                data={
-                    "message": "Projects retrieved successfully",
-                    "projectsData": response.data,
-                },
-                status=status.HTTP_200_OK,
-            )
-        except Exception as e:
-            return Response(
-                data={"message": f"Error retrieving projects: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
             
 class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):

@@ -5,24 +5,10 @@ from .serializers import RecordSerializer
 from rest_framework.permissions import DjangoModelPermissions
 from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
 
-class RecordListView(generics.ListCreateAPIView):
-    queryset = Record.objects.all().order_by('id')
+class RecordListView(generics.CreateAPIView):
+    queryset = Record.objects.all()
     serializer_class = RecordSerializer
     permission_classes = [DjangoModelPermissions, (AdminPermission | TeamMemberPermission | GuestPermission)]
-
-    def list(self, request, *args, **kwargs):
-        try:
-            self.check_permissions(request)
-            response = super().list(request, *args, **kwargs)
-            return Response(
-                data={'message': 'Records retrieved successfully', 'recordData': response.data},
-                status=status.HTTP_200_OK
-            )
-        except Exception as e:
-            return Response(
-                data={'message': f'Error retrieving records: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
     def create(self, request, *args, **kwargs):
         try:
