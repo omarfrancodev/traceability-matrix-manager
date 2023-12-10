@@ -9,7 +9,7 @@ from .serializers import (
     DetailUsersProjectSerializer,
 )
 from rest_framework.permissions import DjangoModelPermissions
-from traceabilitymatrix.permissions import (
+from custompermissions.permissions import (
     AdminPermission,
     TeamMemberPermission,
     GuestPermission,
@@ -30,7 +30,7 @@ class ProjectCreateView(generics.CreateAPIView):
             return Response(
                 data={
                     "message": "Project created successfully",
-                    "projectData": response.data,
+                    "data": response.data,
                 },
                 status=status.HTTP_201_CREATED,
             )
@@ -55,7 +55,7 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(
                 data={
                     "message": "Project retrieved successfully",
-                    "projectData": response.data,
+                    "data": response.data,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -87,7 +87,7 @@ class ProjectDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(
                 data={
                     "message": "Project updated successfully",
-                    "projectData": serializer.data,
+                    "data": serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -132,7 +132,7 @@ class ProjectUsersView(generics.RetrieveAPIView):
             return Response(
                 data={
                     "message": "Project users retrieved successfully",
-                    "projectData": response.data,
+                    "data": response.data,
                 },
                 status=status.HTTP_200_OK,
             )
