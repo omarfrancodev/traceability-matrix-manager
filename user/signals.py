@@ -16,9 +16,8 @@ def user_deleted(sender, instance, **kwargs):
         actionType=EventRecord.Action.Delete,
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
-        userFullNameAffected=instance.fullName,
-        userRoleAffected=instance.role,
-        appModel=User.__name__,
+        modelAffected=User.__name__,
+        data=f"Full Name: {instance.fullName} - Role: {instance.role}",
     )
 
 
@@ -46,9 +45,8 @@ def update_role_create_event_record(current_user, instance):
         actionType=EventRecord.Action.EditRole,
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
-        userFullNameAffected=instance.fullName,
-        userRoleAffected=instance.role,
-        appModel=User.__name__,
+        modelAffected=User.__name__,
+        data=f"Full Name: {instance.fullName} - New Role: {instance.role}",
     )
 
 

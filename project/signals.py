@@ -15,7 +15,8 @@ def project_deleted(sender, instance, **kwargs):
         actionType=EventRecord.Action.Delete,
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
-        appModel=Project.__name__,
+        modelAffected=Project.__name__,
+        data=f"Name: {instance.name} - Created by: {instance.createdBy}",
     )
 
 
