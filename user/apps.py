@@ -7,5 +7,3 @@ class UserConfig(AppConfig):
     
     def ready(self):
         from . import signals
-        from traceabilitymatrix.groupsPermissions import create_groups_and_permissions
-        create_groups_and_permissions()

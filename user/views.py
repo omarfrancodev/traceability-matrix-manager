@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from .models import User
 from .serializers import CustomUserSerializer, CustomListUserSerializer
 from rest_framework.permissions import DjangoModelPermissions
-from traceabilitymatrix.permissions import AdminPermission
+from custompermissions.permissions import AdminPermission
 
 class UserListView(generics.ListAPIView):
     queryset = User.objects.all().order_by('id')
@@ -14,7 +14,7 @@ class UserListView(generics.ListAPIView):
         try:
             response = super().list(request, *args, **kwargs)
             return Response(
-                data={'message': 'Users retrieved successfully', 'usersData': response.data},
+                data={'message': 'Users retrieved successfully', 'data': response.data},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
@@ -32,7 +32,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
         try:
             response = super().retrieve(request, *args, **kwargs)
             return Response(
-                data={'message': 'User retrieved successfully', 'userData': response.data},
+                data={'message': 'User retrieved successfully', 'data': response.data},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
@@ -54,7 +54,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response(
-                data={'message': 'User updated successfully', 'userData': serializer.data},
+                data={'message': 'User updated successfully', 'data': serializer.data},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
