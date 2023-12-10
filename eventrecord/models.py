@@ -10,9 +10,8 @@ class EventRecord(models.Model):
     actionType = models.CharField(max_length=10, choices=Action.choices)
     userFullNameExec = models.CharField(max_length=255, blank=True)
     userRoleExec = models.CharField(max_length=50, blank=True)
-    userFullNameAffected = models.CharField(max_length=255, blank=True)
-    userRoleAffected = models.CharField(max_length=50, blank=True)
-    appModel = models.CharField(max_length=255, blank=True)
+    modelAffected = models.CharField(max_length=255, blank=True)
+    data = models.CharField(max_length=255, blank=True)
     serverTimestamp = models.DateTimeField(auto_now_add=True)
     clientLocalTimestamp = models.DateTimeField(blank=True)
     

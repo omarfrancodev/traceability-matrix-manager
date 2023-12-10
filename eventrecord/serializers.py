@@ -14,9 +14,8 @@ class EventRecordSerializer(serializers.ModelSerializer):
             "actionType",
             "userFullNameExec",
             "userRoleExec",
-            "userFullNameAffected",
-            "userRoleAffected",
-            "appModel",
+            "modelAffected",
+            "data",
             "serverTimestamp",
             "clientLocalTimestamp",
         ]
@@ -26,7 +25,7 @@ class EventRecordSerializer(serializers.ModelSerializer):
         eventRecord = EventRecord.objects.create(
             userFullNameExec=current_user.fullName,
             userRoleExec=current_user.role,
-            appModel=User.__name__,
+            modelAffected=User.__name__,
             **validated_data
         )
 
