@@ -2,14 +2,19 @@ from rest_framework import serializers
 from .models import Record, ResourceURL, ResourceFile
 from django_currentuser.middleware import get_current_authenticated_user
 
-class StringListField(serializers.ListField):
-    child = serializers.CharField(min_length=2)
 
 class RecordSerializer(serializers.ModelSerializer):
     files = serializers.SerializerMethodField()
     urls = serializers.SerializerMethodField()
-    keyRelationships = StringListField()
-
+    keyRelationships = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="projectRecordId"
+    )
+    recordRelations = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_empty=True,
+    )
     uploadedFiles = serializers.ListField(
         child=serializers.FileField(max_length=10000, allow_empty_file=True),
         write_only=True,
@@ -46,6 +51,7 @@ class RecordSerializer(serializers.ModelSerializer):
             "urls",
             "uploadedFiles",
             "uploadedURLs",
+            "recordRelations",
         ]
 
     def get_files(self, obj):
@@ -61,6 +67,11 @@ class RecordSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         current_user = get_current_authenticated_user()
+        recordsRelated = None
+        try:
+            recordsRelated = validated_data.pop("recordRelations")
+        except Exception:
+            pass
         uploaded_files = validated_data.pop("uploadedFiles", [])
         uploaded_urls = validated_data.pop("uploadedURLs", [])
         record = Record.objects.create(
@@ -68,6 +79,8 @@ class RecordSerializer(serializers.ModelSerializer):
             modifiedBy=current_user.fullName,
             **validated_data
         )
+        if recordsRelated:
+            record.keyRelationships.set(recordsRelated)
 
         for file in uploaded_files:
             if file:
@@ -81,8 +94,12 @@ class RecordSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         current_user = get_current_authenticated_user()
+        recordsRelated = validated_data.pop(
+            "recordRelations", instance.keyRelationships.values_list("id", flat=True)
+        )
         modifiedBy = current_user.fullName
         instance.modifiedBy = modifiedBy
+        instance.keyRelationships.set(recordsRelated)
 
         for field in instance._meta.fields:
             field_name = field.name
@@ -107,20 +124,21 @@ class RecordSerializer(serializers.ModelSerializer):
             if newData:
                 model.objects.create(record=instance, **{field_name: newData})
 
-    def removing_simbols(self, string):
-        charactersToDelete = "[]' "
-        translationTable = str.maketrans("", "", charactersToDelete)
-        chainWithoutSymbols = string.translate(translationTable)
-        return chainWithoutSymbols
-    
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        keyRelations = data["keyRelationships"]
-        stringKeys = ""
-        for key in keyRelations:
-            stringKeys += key
-        clean_relationships = self.removing_simbols(stringKeys)
-        data["keyRelationships"] = clean_relationships.split(",")
+        key_relationships = data.get("keyRelationships", [])
+        data["keyRelationships"] = {
+            "prev": [
+                rel
+                for rel in key_relationships
+                if Record.objects.get(projectRecordId=rel).id < instance.id
+            ],
+            "post": [
+                rel
+                for rel in key_relationships
+                if Record.objects.get(projectRecordId=rel).id > instance.id
+            ],
+        }
         return data
 
 class RecordDetailSerializer(serializers.ModelSerializer):
