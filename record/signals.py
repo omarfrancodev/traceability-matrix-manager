@@ -1,13 +1,11 @@
-from django.db.models.signals import pre_save, post_delete
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
-from django.core.exceptions import ValidationError
 from django_currentuser.middleware import get_current_authenticated_user
 from eventrecord.models import EventRecord
+from project.models import Project
 from .models import Record
 import os
 
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 
 @receiver(pre_delete, sender=Record)
 def record_deleted(sender, instance, **kwargs):
@@ -15,27 +13,32 @@ def record_deleted(sender, instance, **kwargs):
     for resource in resources:
         if resource.file and os.path.isfile(resource.file.path):
             os.remove(resource.file.path)
-            
+
     current_user = get_current_authenticated_user()
     EventRecord.objects.create(
         actionType=EventRecord.Action.Delete,
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
-        appModel=Record.__name__,
+        modelAffected=Record.__name__,
+        data=f"ProjectRecordId: {instance.projectRecordId} - Artifact Name: {instance.artifactName}",
     )
 
-@receiver(pre_save, sender=Record)
-def generate_project_record_id(sender, instance, **kwargs):
-    associatedProject = instance.associatedProject
-    projectName = associatedProject.name
-    projectNameAbbr = "".join([word[0].upper() for word in projectName.split()])
 
-    existingRecordsCount = Record.objects.filter(
-        associatedProject=associatedProject, sprint=instance.sprint
-    ).count()
-    
-    customProjectRecordId = (
-        f"{projectNameAbbr}-S-{instance.sprint}-{existingRecordsCount + 1:03d}"
-    )
+@receiver(post_save, sender=Record)
+def generate_project_record_id(sender, instance, created, **kwargs):
+    if created:
+        associatedProject = instance.associatedProject
+        projectName = associatedProject.name
+        projectNameAbbr = "".join([word[0].upper() for word in projectName.split()])
 
-    instance.projectRecordId = customProjectRecordId
+        project = Project.objects.get(id=associatedProject.id)
+        existingValuesIds = project.recordIdValues + 1
+        customProjectRecordId = (
+            f"{projectNameAbbr}-S-{instance.sprint}-{existingValuesIds:03d}"
+        )
+        print(customProjectRecordId)
+
+        instance.projectRecordId = customProjectRecordId
+        instance.save()
+        project.recordIdValues = existingValuesIds
+        project.save()
