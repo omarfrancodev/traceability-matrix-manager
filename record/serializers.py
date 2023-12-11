@@ -141,16 +141,64 @@ class RecordSerializer(serializers.ModelSerializer):
         }
         return data
 
-class RecordDetailSerializer(serializers.ModelSerializer):
-    files = serializers.SerializerMethodField()
-    urls = serializers.SerializerMethodField()
-    associatedRecords = serializers.SerializerMethodField()
+
+class NestedRecordSerializer(serializers.ModelSerializer):
+    keyRelationships = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="projectRecordId"
+    )
 
     class Meta:
         model = Record
         fields = [
             "id",
-            "associatedProject",
+            "projectRecordId",
+            "sprint",
+            "phase",
+            "type",
+            "artifactName",
+            "description",
+            "keyRelationships",
+            "status",
+            "createdBy",
+            "modifiedBy",
+            "createdAt",
+            "updatedAt",
+            "impact",
+            "notes",
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        key_relationships = data.get("keyRelationships", [])
+        data["keyRelationships"] = {
+            "prev": [
+                rel
+                for rel in key_relationships
+                if Record.objects.get(projectRecordId=rel).id < instance.id
+            ],
+            "post": [
+                rel
+                for rel in key_relationships
+                if Record.objects.get(projectRecordId=rel).id > instance.id
+            ],
+        }
+        return data
+
+
+class RecordDetailSerializer(serializers.ModelSerializer):
+    files = serializers.SerializerMethodField()
+    urls = serializers.SerializerMethodField()
+    recordsPrev = NestedRecordSerializer(many=True, read_only=True)
+    recordsPost = NestedRecordSerializer(many=True, read_only=True)
+
+    keyRelationships = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="projectRecordId"
+    )
+
+    class Meta:
+        model = Record
+        fields = [
+            "id",
             "projectRecordId",
             "sprint",
             "phase",
@@ -167,7 +215,8 @@ class RecordDetailSerializer(serializers.ModelSerializer):
             "notes",
             "files",
             "urls",
-            "associatedRecords",
+            "recordsPrev",
+            "recordsPost",
         ]
 
     def get_files(self, obj):
@@ -181,51 +230,64 @@ class RecordDetailSerializer(serializers.ModelSerializer):
         urls = ResourceURL.objects.filter(record=obj)
         return [url.url for url in urls]
 
-    def get_associatedRecords(self, obj):
-        all_associated_records = []
-        keyRelations = obj.keyRelationships
-        if isinstance(keyRelations, str):
-            clean_relationships = self.removing_simbols(keyRelations)
-            keyRelations = clean_relationships.split(",")
-        try:
-            for keyRelation in keyRelations:
-                related_record = Record.objects.get(projectRecordId=keyRelation)
-                if related_record:
-                    all_associated_records += self.get_all_associated_records(related_record)
-        except Exception:
-            pass
-        serializer = RecordSerializer(all_associated_records, many=True)
-        return serializer.data
-    
-    def get_all_associated_records(self, record):
-        associated_records = [record]
-        try:
-            if record:
-                keyRelations = record.keyRelationships
-                if isinstance(keyRelations, str):
-                    clean_relationships = self.removing_simbols(record.keyRelationships)
-                    keyRelations = clean_relationships.split(",")
-                if len(keyRelations) >= 1:
-                    for keyRelation in keyRelations:
-                        related_record = Record.objects.get(projectRecordId=keyRelation)
-                        if related_record:
-                            associated_records += self.get_all_associated_records(related_record)
-        except Exception:
-            pass
-        return associated_records
-
-    def removing_simbols(self, string):
-        charactersToDelete = "[]' "
-        translationTable = str.maketrans("", "", charactersToDelete)
-        chainWithoutSymbols = string.translate(translationTable)
-        return chainWithoutSymbols
-    
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        keyRelations = data["keyRelationships"]
-        stringKeys = ""
-        for key in keyRelations:
-            stringKeys += key
-        clean_relationships = self.removing_simbols(stringKeys)
-        data["keyRelationships"] = clean_relationships.split(",")
+        related_records = self._get_related_records(instance, instance.id)
+        key_relationships = data.get("keyRelationships", [])
+        data["keyRelationships"] = {
+            "prev": [
+                rel
+                for rel in key_relationships
+                if Record.objects.get(projectRecordId=rel).id < instance.id
+            ],
+            "post": [
+                rel
+                for rel in key_relationships
+                if Record.objects.get(projectRecordId=rel).id > instance.id
+            ],
+        }
+        data["recordsPrev"] = NestedRecordSerializer(
+            related_records["recordsPrev"], many=True
+        ).data
+        data["recordsPost"] = NestedRecordSerializer(
+            related_records["recordsPost"], many=True
+        ).data
         return data
+
+    def _get_related_records(
+        self, instance, first_id, prev_records=None, post_records=None
+    ):
+        if prev_records is None:
+            prev_records = set()
+        if post_records is None:
+            post_records = set()
+
+        key_relationships = instance.keyRelationships.all()
+
+        for related_record in key_relationships:
+            if related_record.id != first_id:
+                if (
+                    related_record.id < instance.id
+                    and related_record not in prev_records
+                    and related_record not in post_records
+                    and related_record.id < first_id
+                ):
+                    prev_records.add(related_record)
+                    self._get_related_records(
+                        related_record, first_id, prev_records, post_records
+                    )
+                elif (
+                    related_record.id > instance.id
+                    and related_record not in post_records
+                    and related_record not in prev_records
+                    and related_record.id > first_id
+                ):
+                    post_records.add(related_record)
+                    self._get_related_records(
+                        related_record, first_id, prev_records, post_records
+                    )
+
+        return {
+            "recordsPrev": sorted(prev_records, key=lambda x: x.id),
+            "recordsPost": sorted(post_records, key=lambda x: x.id),
+        }
