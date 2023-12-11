@@ -28,7 +28,7 @@ class Record(models.Model):
     type = models.CharField(max_length=255)
     artifactName = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    keyRelationships = models.TextField()
+    keyRelationships = models.ManyToManyField("self", blank=True)
     status = models.CharField(max_length=25, choices=Status.choices)
     createdBy = models.CharField(max_length=255, blank=True)
     modifiedBy = models.CharField(max_length=255, blank=True)
