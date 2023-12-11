@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from .models import Record
 from .serializers import RecordSerializer, RecordDetailSerializer
 from rest_framework.permissions import DjangoModelPermissions
-from traceabilitymatrix.permissions import AdminPermission, TeamMemberPermission, GuestPermission
+from custompermissions.permissions import AdminPermission, TeamMemberPermission, GuestPermission
 
 class RecordListView(generics.CreateAPIView):
     queryset = Record.objects.all()
@@ -18,7 +18,7 @@ class RecordListView(generics.CreateAPIView):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(
-                data={'message': 'Record created successfully', 'recordData': serializer.data},
+                data={'message': 'Record created successfully', 'data': serializer.data},
                 status=status.HTTP_201_CREATED,
                 headers=headers
             )
@@ -37,7 +37,7 @@ class RecordDetailView(generics.RetrieveUpdateDestroyAPIView):
         try:
             response = super().retrieve(request, *args, **kwargs)
             return Response(
-                data={'message': 'Record retrieved successfully', 'recordData': response.data},
+                data={'message': 'Record retrieved successfully', 'data': response.data},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
@@ -59,7 +59,7 @@ class RecordDetailView(generics.RetrieveUpdateDestroyAPIView):
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             return Response(
-                data={'message': 'Record updated successfully', 'recordData': serializer.data},
+                data={'message': 'Record updated successfully', 'data': serializer.data},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
@@ -97,7 +97,7 @@ class RecordDetailTraceView(generics.RetrieveAPIView):
         try:
             response = super().retrieve(request, *args, **kwargs)
             return Response(
-                data={'message': 'Record retrieved successfully', 'recordData': response.data},
+                data={'message': 'Record retrieved successfully', 'data': response.data},
                 status=status.HTTP_200_OK
             )
         except Exception as e:
