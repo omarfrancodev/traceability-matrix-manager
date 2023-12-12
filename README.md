@@ -39,7 +39,7 @@ API documentation is available in Postman collections:
 
 ### Installation
 
-1. Clone the repository or download the release verion [v1.0.0-beta](https://github.com/omarfrancodev/traceability-matrix-manager-API/releases/tag/v1.0.0-beta).
+1. Clone the repository or download the release version [v1.0.0-beta](https://github.com/omarfrancodev/traceability-matrix-manager-API/releases/tag/v1.0.0-beta).
   ```bash
   git clone https://github.com/omarfrancodev/traceability-matrix-manager-API.git
   ```
