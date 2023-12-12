@@ -16,7 +16,7 @@ def project_deleted(sender, instance, **kwargs):
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
         modelAffected=Project.__name__,
-        data=f"Name: {instance.name} - Created by: {instance.createdBy}",
+        data=f"The following Project has been deleted: Name: {instance.name} - Created by: {instance.createdBy}",
     )
 
 

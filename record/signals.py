@@ -20,7 +20,7 @@ def record_deleted(sender, instance, **kwargs):
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
         modelAffected=Record.__name__,
-        data=f"ProjectRecordId: {instance.projectRecordId} - Artifact Name: {instance.artifactName}",
+        data=f"The following Record has been deleted: ProjectRecordId: {instance.projectRecordId} - Artifact Name: {instance.artifactName}",
     )
 
 

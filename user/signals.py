@@ -8,7 +8,6 @@ from eventrecord.models import EventRecord
 
 User = get_user_model()
 
-
 @receiver(pre_delete, sender=User)
 def user_deleted(sender, instance, **kwargs):
     current_user = get_current_authenticated_user()
@@ -17,7 +16,7 @@ def user_deleted(sender, instance, **kwargs):
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
         modelAffected=User.__name__,
-        data=f"Full Name: {instance.fullName} - Role: {instance.role}",
+        data=f"The following user was deleted: Full name: {instance.fullName} - Role: {instance.role}",
     )
 
 
@@ -46,7 +45,7 @@ def update_role_create_event_record(current_user, instance):
         userFullNameExec=current_user.fullName,
         userRoleExec=current_user.role,
         modelAffected=User.__name__,
-        data=f"Full Name: {instance.fullName} - New Role: {instance.role}",
+        data=f"The role of the following user has been modified: Full Name: {instance.fullName} - New Role: {instance.role}",
     )
 
 
